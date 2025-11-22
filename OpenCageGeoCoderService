@@ -1,0 +1,65 @@
+public class OpenCageGeoCoderService {
+	public static void  reverseGeoCoding(String accountId)
+    {
+        Account Acc = [Select Id,Location__Latitude__s,Location__Longitude__s from Account 
+                       where Id =: accountId
+                       AND Location__latitude__s != null
+                       AND Location__longitude__s != null];
+        
+        String queryparm = Acc.Location__Latitude__s+','+Acc.Location__Longitude__s;
+        System.debug('QueryParm => '+queryparm);
+        
+        HttpRequest httpReq = new HttpRequest();
+        httpReq.setEndpoint(System.Label.OpenCageAPI+'?key='+System.Label.apiKey+'&q='+queryparm+'&pretty=1');
+        httpReq.setHeader('content-type','application/json');
+        httpReq.setHeader('Accept','application/json');
+        httpReq.setMethod('GET');
+       
+        Http http = new Http();
+        try{
+            HttpResponse httpRes = http.send(httpReq);
+            String  bodyStatus = httpRes.getBody();
+            Integer statusCode =  httpRes.getStatusCode();
+            String  status = httpRes.getStatus();
+            
+            System.debug('status => '+status);
+            System.debug('bodyStatus => '+bodyStatus);
+            if(statusCode == 200)
+            {
+                System.debug('statusCode => '+statusCode);
+                
+                OpenCageReverseResponseWrapper wrapper =(OpenCageReverseResponseWrapper)System.JSON.deserialize(bodyStatus,
+                                                     OpenCageReverseResponseWrapper.class);
+                if(wrapper?.results?.size() > 0)
+                {
+                    OpenCageReverseResponseWrapper.results rslt= wrapper.results.get(0);
+                    
+                    //Update the Account Record
+                    Acc.BillingStreet  = rslt ?. components ?.road;
+                    Acc.BillingCity   = rslt ?. components ?. city;
+                    Acc.BillingState  = rslt ?. components ?. state;
+                    Acc.BillingPostalCode  = rslt ?. components ?.postcode;
+                    Acc.BillingCountry  = rslt ?. components ?.country;
+                    
+                    Acc.ShippingStreet = rslt?.components?.road;
+                    Acc.ShippingCity = rslt?.components?.city;
+                    Acc.ShippingState = rslt?.components?.state;
+                    Acc.ShippingPostalCode =rslt?.components?.postcode;
+                    Acc.ShippingCountry = rslt?.components?.country;
+                    
+                    update Acc;
+                        
+                   System.debug('Account updated => '+Acc);
+                }
+
+                
+            }
+        }
+        catch(Exception ex)
+        {
+            System.debug(ex.getStackTraceString());
+            System.debug(ex.getMessage());
+        }
+        
+    }
+}
