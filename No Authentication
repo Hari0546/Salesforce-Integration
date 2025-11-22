@@ -1,0 +1,85 @@
+httpReq.setHeader('content-type', 'application/json');
+ httpReq.setHeader('Accept', 'application/json');
+✅ What these headers mean
+1️⃣ content-type: application/json
+This header tells the server:
+"If I send any request body, it will be in JSON format."
+Example:
+If you send data with POST, PATCH, or PUT, this header is required.
+But in a GET request, you usually don’t send a body — so this header is not required, but it also doesn’t hurt.
+2️⃣ Accept: application/json
+This header tells the server:
+"I want the response from you in JSON format."
+This is important because APIs can return data in different formats:
+•	JSON
+•	XML
+•	HTML/plain text
+•	CSV
+etc.
+So by sending "Accept": "application/json" you are asking the API:
+"Please give me JSON so I can read it easily."
+
+✅ What this class does
+CurrencyAPIService.getCurrencyRates() makes an HTTP GET callout to a public API:
+https://open.er-api.com/v6/latest/USD
+This API returns latest currency exchange rates based on USD.
+________________________________________
+💡 Step-by-Step Breakdown
+________________________________________
+⭐ 1. Create an HTTP Request
+HttpRequest httpReq = new HttpRequest();
+This creates a new request that Salesforce will send to an external service.
+________________________________________
+⭐ 2. Set the endpoint URL
+httpReq.setEndpoint('https://open.er-api.com/v6/latest/USD');
+This is the URL you want to call.
+It gives exchange rates with USD as base currency.
+________________________________________
+⭐ 3. Set Request Headers
+httpReq.setHeader('content-type', 'application/json');
+httpReq.setHeader('Accept', 'application/json');
+This tells the server:
+•	The format you are sending/requesting is JSON.
+•	Although GET does not send a body, setting the header is still OK.
+________________________________________
+⭐ 4. Set HTTP Method
+httpReq.setMethod('GET');
+This means:
+•	You want to retrieve data.
+•	You are not sending anything to the server.
+________________________________________
+⭐ 5. Send the Request
+Http http = new Http();
+HttpResponse httpRes = http.send(httpReq);
+•	Http class sends the prepared request.
+•	HttpResponse stores whatever comes back from the API.
+________________________________________
+⭐ 6. Read the Response
+String body = httpRes.getBody();
+String status = httpRes.getStatus();
+Integer statusCode = httpRes.getStatusCode();
+🔍 What each means
+•	body → JSON response from the API
+•	status → string message (e.g., "OK")
+•	statusCode → HTTP code (e.g., 200, 404, 500)
+________________________________________
+⭐ 7. Debug Logging
+System.debug('Currency API body = '+body);
+System.debug('Currency API Status => '+status);
+System.debug('Currecny API Stauts code  => '+statusCode);
+This prints response values in debug logs.
+________________________________________
+⭐ 8. Exception Handling
+🔸 Callout exceptions (timeout, bad endpoint, no internet, etc.)
+catch(System.CalloutException cex)
+{
+    if(String.valueOf(cex).startsWith('System.CalloutException'))
+        System.debug('CalloutException : '+cex.getMessage());
+}
+🔸 Any other exception
+catch(Exception e)
+{
+    System.debug(e.getStackTraceString());
+}
+This ensures your code doesn’t break and logs the error.
+
