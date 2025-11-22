@@ -1,0 +1,42 @@
+public with sharing class CurrencyAPIService {
+    public static void getCurrencyRates() {
+        /* step1 Prepare Http Request*/
+        HttpRequest httpReq = new HttpRequest();
+
+        /*step 1.1 Set EndPoint */
+        httpReq.setEndpoint('https://open.er-api.com/v6/latest/USD');
+
+        /*step 1.2 SetHeaders */
+        httpReq.setHeader('content-type', 'application/json');
+        httpReq.setHeader('Accept', 'application/json');
+        
+        /* step 1.3 setMethod*/
+        httpReq.setMethod('GET');
+
+
+        /* Step 2 : send the above Prepared Request*/
+        Http http = new Http();
+        try{
+            HttpResponse httpRes = http.send(httpReq);
+            
+            /* Step 3 : Print the Information*/
+            String body = httpRes.getBody();
+            String status = httpRes.getStatus();
+            Integer statusCode = httpRes.getStatusCode();
+            System.debug('Currency API body = '+body);
+            System.debug('Currency API Status => '+status);
+            System.debug('Currecny API Stauts code  => '+statusCode);
+
+        }
+        catch(System.CalloutException cex)
+        {
+            if(String.valueOf(cex).startsWith('System.CalloutException'))
+            System.System.debug('CalloutException : '+cex.getMessage());
+        }
+        catch(Exception e)
+        {
+            System.debug(e.getStackTraceString());
+        }
+        
+    }
+}
