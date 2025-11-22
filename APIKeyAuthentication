@@ -1,0 +1,105 @@
+To understand how to identify what wrapper class you need, you must follow one simple rule:
+✅ Rule: Your Apex wrapper must match the JSON structure exactly.
+So the way to identify what classes (results, components, geometry) you need is:
+⭐ Step 1: Get the JSON response from API
+Example OpenCage response looks like this (shortened):
+{
+  "results": [
+    {
+      "components": {
+        "city": "Hanover",
+        "country": "Germany",
+        "postcode": "30165",
+        "road": "Philipsbornstraße",
+        "state": "Lower Saxony"
+      },
+      "confidence": 10,
+      "formatted": "Philipsbornstraße 2, 30165 Hanover, Germany",
+      "geometry": {
+        "lat": 52.387783,
+        "lng": 9.7334394
+      }
+    }
+  ]
+}
+
+
+
+⭐ Step 2: Look at each object in JSON
+You identify the wrapper by matching the JSON structure:
+🔹 JSON key → Wrapper field
+🔹 JSON nested object → Inner class
+🔹 JSON array → List ([])
+
+⭐ Step 3: Convert JSON structure → Apex wrapper
+The JSON has:
+•	"results": [...] → list of results
+•	"components": {...} → object → inner class
+•	"geometry": {...} → object → inner class
+So you identify:
+1. A list called results
+public results[] results;
+
+2. Inside each result:
+Field	JSON Type	Apex
+components	object	inner class components
+confidence	number	Integer
+formatted	string	String
+geometry	object	inner class geometry
+		
+
+
+
+This is how you know what to write
+public class results {
+    public components components;
+    public Integer confidence;
+    public String formatted;
+    public geometry geometry;
+}
+
+3. components object
+It contains many string fields:
+"components": {
+  "city": "Hanover",
+  "country": "Germany",
+  "road": "Philipsbornstraße",
+  ...
+}
+So you identify:
+public class components {
+    public String city;
+    public String country;
+    public String road;
+    ...
+}
+
+
+
+
+4. geometry object
+"geometry": {
+  "lat": 52.387783,
+  "lng": 9.7334394
+}
+So you identify:
+public class geometry {
+    public Double lat;
+    public Double lng;
+}
+
+OpenCageReverseResponseWrapper.results rslt = wrapper.results.get(0);
+
+This line has two important parts:
+✔ 1. OpenCageReverseResponseWrapper.results rslt
+Yes — this creates a variable (instance reference) of the inner class:
+public class results { ... }
+So this part is correct:
+“We are creating an instance variable for the results class.”
+👍 Good understanding!
+✔ 2. wrapper.results.get(0)
+Let’s correct your understanding here.
+wrapper.results refers to:
+public results[] results;
+So yes, it refers to your list of results.
+But more precisely:
